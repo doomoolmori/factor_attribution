@@ -52,6 +52,57 @@ class MyWindow(QMainWindow):
         setting_btn.move(300, 150)
         setting_btn.clicked.connect(self.setting_dialog_open)
 
+
+    def table_open(self):
+        self.table_dialog = QWidget()
+        self.table_dialog.setGeometry(600, 100, 1200, 800)
+        self.table_dialog.setWindowTitle("Table")
+
+        self.table_dialog.table = QTableWidget(self.table_dialog)
+        self.table_dialog.table.resize(1200, 800)
+        self.table_dialog.table.setRowCount(65)
+        self.table_dialog.table.setColumnCount(10)
+        self.table_dialog.show()
+
+
+    def create_table_widget(self, widget, df):
+        widget.setRowCount(len(df.index))
+        widget.setColumnCount(len(df.columns))
+        widget.setHorizontalHeaderLabels(df.columns)
+        widget.setVerticalHeaderLabels(np.array(df.index, dtype=str))
+
+        for row_index, row in enumerate(df.index):
+            for col_index, column in enumerate(df.columns):
+                value = df.loc[row][column]
+                item = QTableWidgetItem(str(value))
+                widget.setItem(row_index, col_index, item)
+
+    def top_10(self, df):
+        self.table_top10 = QWidget()
+        self.table_top10.setGeometry(600, 100, 1200, 800)
+        self.table_top10.setWindowTitle("top10Table")
+        self.table_top10.table = QTableWidget(self.table_top10)
+        self.table_top10.table.resize(1200, 800)
+        self.create_table_widget(self.table_top10.table, df)
+        self.table_top10.show()
+
+    def bottom_10(self, df):
+        self.table_bottom10 = QWidget()
+        self.table_bottom10.setGeometry(600, 100, 1200, 800)
+        self.table_bottom10.setWindowTitle("top10Table")
+        self.table_bottom10.table = QTableWidget(self.table_bottom10)
+        self.table_bottom10.table.resize(1200, 800)
+        self.create_table_widget(self.table_bottom10.table, df)
+        self.table_bottom10.show()
+
+    def table_(self, widget, df, name):
+        widget.setGeometry(600, 100, 1200, 800)
+        widget.setWindowTitle(name)
+        widget.table = QTableWidget(widget)
+        widget.table.resize(1200, 800)
+        self.create_table_widget(widget.table, df)
+        widget.show()
+
     def setting_dialog_open(self):
         attribution_score_list = np.array([int(self.price_box.currentText().split(' : ')[-1]), \
                                            int(self.dividend_box.currentText().split(' : ')[-1]), \
@@ -64,11 +115,19 @@ class MyWindow(QMainWindow):
         if attribution_score_list.sum() == 0:
             attribution_score_list += 1
         print(attribution_score_list)
-        df = self.calculation.make_result_df(attribution_score_list)
-        self.surface_dialog = QWidget()
-        self.surface_plot(df)
+        result = self.calculation.make_result_dict(attribution_score_list)
+        self.surface_plot(result['average_weight_df'])
+
+        self.table_top_10 = QWidget()
+        self.table_bottom_10 = QWidget()
+
+        self.table_(self.table_top_10, result['top_10_df'], 'top')
+        self.table_(self.table_bottom_10, result['bottom_10_df'], 'bottom')
+
+        #self.bottom_10(result['bottom_10_df'])
 
     def surface_plot(self, df):
+        self.surface_dialog = QWidget()
         bar_width = 0.1
         year = list(df.index)
         index = np.arange(len(df))
@@ -158,26 +217,46 @@ class Calculation():
         result_array = np.swapaxes(result_array, 0, 2)
         return result_array
 
-    def make_result_df(self, attribution_score_list:list):
+    def make_scaled_attribution_score_list(self, attribution_score_list:list):
         attribution_score_list = np.array(attribution_score_list)
-        attribution_score_list = attribution_score_list/attribution_score_list.max()
+        return attribution_score_list / attribution_score_list.max()
 
-        ## Y
-        attribution_list = [x[0] for x in self.char_factor_mapping_dict.values()]
-        normalized_factor_df = self.factor_characters_df[attribution_list].apply(lambda x:
-                                                                                 self.calculation_normalized(x),
-                                                                                 axis=0)
-        temp = normalized_factor_df.values @ attribution_score_list
+    def make_normalized_factor_df(self) -> pd.DataFrame:
+        using_factor_attribution = [x[0] for x in self.char_factor_mapping_dict.values()]
+        normalized_factor_df = self.factor_characters_df[using_factor_attribution].\
+                               apply(lambda x: self.calculation_normalized(x), axis=0)
+        return normalized_factor_df
 
+    def make_result_dict(self, attribution_score_list:list) -> dict:
+        result = {}
+        scaled_attribution_score_list = self.make_scaled_attribution_score_list(attribution_score_list)
+        normalized_factor_df = self.make_normalized_factor_df()
+        attribution_score_vector = normalized_factor_df.values @ scaled_attribution_score_list
+
+        attribution_score_vector_rank = pd.DataFrame(attribution_score_vector).rank()
         quantile = 5
-        qcut_df = pd.DataFrame(temp).apply(lambda x: pd.qcut(x, quantile, labels=False))
+        qcut_df = attribution_score_vector_rank.apply(lambda x: pd.qcut(x, quantile, labels=False))
         qcut_df = (quantile - 1) - qcut_df
 
         result_array = self.make_attribution_and_factor_weight_array(self.factor_weight_df, qcut_df, quantile)
-        df = pd.DataFrame(result_array[0, :, :])
-        df.index = self.factor_weight_df.columns
-        df.columns = [f'{x + 1}_q' for x in range(quantile)]
-        return df
+        average_weight_df = pd.DataFrame(result_array[0, :, :])
+        average_weight_df.index = self.factor_weight_df.columns
+        average_weight_df.columns = [f'{x + 1}_q' for x in range(quantile)]
+        result['average_weight_df'] = average_weight_df
+
+        top_10_index = attribution_score_vector_rank.sort_values(0)[-10:].index
+        top_10_df = self.factor_characters_df.loc[self.factor_characters_df.index[top_10_index[::-1]]]
+        result['top_10_df'] = top_10_df
+
+        bottom_10_index = attribution_score_vector_rank.sort_values(0)[:10].index
+        bottom_10_df = self.factor_characters_df.loc[self.factor_characters_df.index[bottom_10_index]]
+        result['bottom_10_df'] = bottom_10_df
+
+        key = result.keys()
+        with pd.ExcelWriter(f'out/{attribution_score_list}.xlsx') as writer:
+            for key_name in key:
+                result[key_name].to_excel(writer, sheet_name=key_name)
+        return result
 
     """
         def get_char_score_dict(self, char_list: list) -> dict:
@@ -209,6 +288,9 @@ class Calculation():
 
 if __name__ == '__main__':
     calculation = Calculation()
+
+
+
     app = QApplication(sys.argv)
     window = MyWindow(calculation)
     window.show()
