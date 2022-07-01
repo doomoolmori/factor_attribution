@@ -1,0 +1,35 @@
+스코어링 상위 중에
+
+1. 역배열인 팩터를 포함한 친구들은 제거. (분위와 평균factor weight, beta)
+2. 정배열인 팩터는 상위 P_value 4개정도??,
+Why? 의미없이 섞여들어온 팩터제거, 특성점수를 안좋게한 
+ 
+OK
+
+그 다음에 100개 발탁
+100개 발탁
+
+특성 i개 
+상위 100개 발탁 N(1)
+
+상위 80개 발탁 N(2)
+
+상위 60개 발탁 N(3)
+
+상위 40개 발탁 N(4)
+
+상위 20개 발탁 N(5)
+
+동점 있을 때, equal weighted score 상위 N개
+
+
+
+그 다음에 절대로 필터링 아마 샤프레이쇼???
+
+1. factor_value_df , normalized_attribution_score, total_attribution_score
+
+2. qtile별 평균 weight
+
+3. 선택기준 X: quantil, Y: factor weight beta and T value
+
+4. fillter된 df에서 어디서 필터링 되고 어디서 살아남는지 쓰기.
