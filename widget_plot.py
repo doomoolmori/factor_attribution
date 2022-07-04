@@ -46,6 +46,13 @@ class MyWindow(QMainWindow):
             self.risk_box.addItem(f'risk_attribution : {i}')
             self.winratio_box.addItem(f'winratio_attribution : {i}')
             self.market_box.addItem(f'market_attribution : {i}')
+        self.price_box.setCurrentText(f'price_attribution : 0')
+        self.dividend_box.setCurrentText(f'dividend_attribution : 0')
+        self.momentum_box.setCurrentText(f'momentum_attribution : 0')
+        self.investment_box.setCurrentText(f'investment_attribution : 0')
+        self.risk_box.setCurrentText(f'risk_attribution : 0')
+        self.winratio_box.setCurrentText(f'winratio_attribution : 0')
+        self.market_box.setCurrentText(f'market_attribution : 0')
 
         setting_btn = QPushButton("setting", self)
         setting_btn.move(300, 150)
@@ -100,11 +107,11 @@ class MyWindow(QMainWindow):
         result = self.calculation.make_result_dict(attribution_score_list)
         self.surface_plot(result['average_weight_df'])
 
-        self.table_top_10 = QWidget()
-        self.table_bottom_10 = QWidget()
+        self.table_beta = QWidget()
+        self.table_final = QWidget()
 
-        self.table_(self.table_top_10, result['top_10_df'], 'top')
-        self.table_(self.table_bottom_10, result['bottom_10_df'], 'bottom')
+        self.table_(self.table_beta, result['beta_df'], 'beta')
+        self.table_(self.table_final, result['final_factor_df'], 'final_df_sharp_sort')
 
 
     def surface_plot(self, df):
@@ -140,7 +147,7 @@ class MyWindow(QMainWindow):
                            np.array([x for x in range(0, len(df))]))
 
         self.surface_dialog.ax1.plot_surface(Y, X, df.values, cmap=cm.gist_rainbow)
-        self.surface_dialog.ax1.set_xticks(np.arange(bar_width, 15 + bar_width, 1))
+        self.surface_dialog.ax1.set_xticks(np.arange(bar_width, 14 + bar_width, 1))
         self.surface_dialog.ax1.set_xticklabels(list(df.index), fontsize=6)
         self.surface_dialog.ax1.set_yticks(np.arange(bar_width, len(df.columns) + bar_width, 1))
         self.surface_dialog.ax1.set_yticklabels(list(df.columns), fontsize=6)
