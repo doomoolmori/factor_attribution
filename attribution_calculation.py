@@ -71,7 +71,7 @@ class Calculation():
         return result_array
 
     def quantile_weight_beta(self, average_weight_df: pd.DataFrame, quantile: int) -> pd.DataFrame:
-        Y = average_weight_df
+        Y = np.log(average_weight_df)
         X = np.array([x + 1 for x in range(len(Y.columns))][::-1])
         cov = pd.DataFrame(np.cov(Y, X))
         beta = cov.iloc[-1, :-1] / np.diag(cov)[-1]
@@ -81,7 +81,7 @@ class Calculation():
         beta_df.columns = ['beta', 't_value']
         beta_df.index = average_weight_df.index
         beta_df['contain'] = 0
-        beta_df['contain'].loc[Y.index[t_value > 0.5]] = 1
+        beta_df['contain'].loc[Y.index[t_value > 2]] = 1
         return beta_df
 
     def re_filtering(self, beta_df: pd.DataFrame, normalized_ca: list) -> pd.DataFrame:
