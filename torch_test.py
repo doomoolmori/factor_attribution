@@ -182,3 +182,94 @@ if __name__ == '__main__':
     
     pd.DataFrame(delta_df.to_array).to_csv('top_delta.csv')
     """
+"""
+import polars as pl
+
+def rank(_exp, method='average', ascending=True):
+    # Fill nans so as not to affect ranking
+    fill = np.Inf if ascending else -np.Inf
+    reverse = False if ascending else True
+    tmp = pl.when(_exp.is_not_null()).then(_exp).otherwise(fill).rank(reverse=reverse, method=method)
+    # Plug nans back in
+    exp = pl.when(_exp.is_not_null()).then(tmp).otherwise(_exp)
+    return exp
+
+import polars as pl
+data = pl.read_csv('multifactor_characters_dt.csv', dtype={'sedol': pl.Utf8}, quote_char="'", low_memory=False)
+
+
+raw_data_name = '2022-05-27_cosmos-univ-with-factors_with-finval_global_monthly.csv'
+universe = 'Univ_KOSPI&KOSDAQ'
+sector = 'Sector_1'
+raw_data = pl.read_csv(raw_data_name, quote_char="'", low_memory=False, dtype={'sedol': pl.Utf8})
+raw_data = raw_data.filter((pl.col(universe) == 1)).sort('date_')
+
+
+value_dict = {'DeepValue': True,
+              'Inverse PEG ( PEG =PER / 12 month forward eps growth)': True,
+              'Price/Cash Flow - Current': False,
+              'Price/Earnings Ratio - Close': False,
+              'Price/Earnings Ratio - Current': False,
+              'Price/Sales': False,
+              'StableValue': True}
+
+value = 0
+for value_name in value_dict.keys():
+    temp_df = raw_data.pivot(index='date_', columns='infocode', values=value_name)
+    trans_matrix = temp_df.select(pl.all().exclude('date_')).transpose()
+    value += trans_matrix.select(rank(pl.all(), ascending=value_dict[value_name])).transpose().to_numpy()
+
+momentum = 0
+for momentum_name in momentum_dict.keys():
+    temp_df = raw_data.pivot(index='date_', columns='infocode', values=momentum_name)
+    trans_matrix = temp_df.select(pl.all().exclude('date_')).transpose()
+    momentum += trans_matrix.select(rank(pl.all(), ascending=momentum_dict[momentum_name])).transpose().to_numpy()
+
+value = pd.DataFrame(value).rank(1).to_numpy()
+momentum = pd.DataFrame(momentum).rank(1).to_numpy()
+
+available = (~np.isnan(value) * ~np.isnan(momentum)) * 1.0
+
+value[np.isnan(value)] = 0
+momentum[np.isnan(momentum)] = 0
+
+import torch
+import numpy as np
+
+0.0179 - 0.2 * (0.0047) + 0.2 * (-0.0019)
+# value랑 momentum
+
+weight = torch.tensor([0.50, 0.50], requires_grad=True)
+# nan = torch.tensor([[1., 1.],
+#                    [0, 1.]], requires_grad=True)
+nan = torch.tensor(available, requires_grad=True)
+
+# factor 계산할 때 없으면 엄청 낮은 값을 넣자
+# factor_score1 = torch.tensor([[2., 3.],
+#                              [-1, 1.]], requires_grad=True)  # 최초 Tensor 객체
+factor_score1 = torch.tensor(value, requires_grad=True)  # 최초 Tensor 객체
+factor_score2 = torch.tensor(momentum, requires_grad=True)  # 최초 Tensor 객체
+
+# factor_score2 = torch.tensor([[2.2, 1.3],
+#                              [-1, 10.1]], requires_grad=True)  # 최초 Tensor 객체
+
+pct_change = torch.tensor(adj_pct_change.fillna(0).to_numpy(), requires_grad=True)
+
+# pct_change = torch.tensor([[0.2, -0.3],
+#                           [0.5, 0.1]], requires_grad=True)  # 최초 Tensor 객체
+
+rank_sum = factor_score1 * weight[0] + factor_score2 * weight[1]
+
+soft_max_weight = torch.softmax(rank_sum, dim=1) * nan
+soft_max_weight = torch.multiply(soft_max_weight, torch.reshape(1 / (soft_max_weight).sum(1), (234, 1)))
+
+returns = torch.matmul(soft_max_weight, pct_change.T)
+
+total = torch.diag(returns)
+sum_end = total.mean()
+# sum_std = total.std()
+# result = sum_end/sum_std
+sum_end.backward()
+print(sum_end)
+print(weight.grad)
+"""
