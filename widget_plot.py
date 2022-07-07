@@ -302,11 +302,17 @@ class MyWindow(QMainWindow):
         final_x = np.array(X.loc[final_df.index])
         final_y = np.array(Y.loc[final_df.index])
         final_z = np.array(Z.loc[final_df.index])
+
         widget.scatter[plot_number].scatter(final_x, final_y, final_z, marker='o', s=40, cmap='Greens')
+        for i in range(len(final_df.index)):
+            widget.scatter[plot_number].text3D(final_x[i], final_y[i], final_z[i], str(i) + " : " + str(final_df.index[i]))
 
         widget.scatter[plot_number].set_xlabel(f'{x}')
         widget.scatter[plot_number].set_ylabel(f'{y}')
         widget.scatter[plot_number].set_zlabel(f'{z}')
+
+
+
 
     ### table
     def final_table(self, widget, calculation_result):
