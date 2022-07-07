@@ -273,3 +273,6 @@ sum_end.backward()
 print(sum_end)
 print(weight.grad)
 """
+
+##
+
