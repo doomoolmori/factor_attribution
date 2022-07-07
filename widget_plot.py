@@ -65,9 +65,16 @@ class MyWindow(QMainWindow):
         self.risk_box.setCurrentText(f'risk_attribution : 0')
         self.winratio_box.setCurrentText(f'winratio_attribution : 0')
         self.market_box.setCurrentText(f'market_attribution : 0')
-        setting_btn = QPushButton("setting", self)
-        setting_btn.move(300, 150)
-        setting_btn.clicked.connect(self.setting_dialog_open)
+
+        self.top_N = QComboBox(self)
+        self.top_N.setGeometry(300, 100, 200, 30)
+        for i in range(1, 11):
+            self.top_N.addItem(f'top_N : {i * 10}')
+        self.top_N.setCurrentText(f'top_N : 30')
+
+        self.setting_btn = QPushButton("setting", self)
+        self.setting_btn.move(300, 150)
+        self.setting_btn.clicked.connect(self.setting_dialog_open)
 
     def close_widget(self):
         try:
@@ -93,11 +100,12 @@ class MyWindow(QMainWindow):
                             int(self.risk_box.currentText().split(' : ')[-1]), \
                             int(self.winratio_box.currentText().split(' : ')[-1]), \
                             int(self.market_box.currentText().split(' : ')[-1])])
-        if ca_list.sum() == 0:
+        if np.abs(ca_list).sum() == 0:
             ca_list += 1
         self.ca_list = ca_list
+        top_N = int(self.top_N.currentText().split(' : ')[-1])
         print(ca_list)
-        calculation_result = self.calculation.make_result_dict(ca_list=ca_list, top_N=30)
+        calculation_result = self.calculation.make_result_dict(ca_list=ca_list, top_N=top_N)
 
         self.surface_and_bar_widget = QWidget()
         self.box_and_scatter_widget = QWidget()
