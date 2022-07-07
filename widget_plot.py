@@ -69,7 +69,23 @@ class MyWindow(QMainWindow):
         setting_btn.move(300, 150)
         setting_btn.clicked.connect(self.setting_dialog_open)
 
+    def close_widget(self):
+        try:
+            self.surface_and_bar_widget.close()
+        except:
+            pass
+        try:
+            self.box_and_scatter_widget.close()
+        except:
+            pass
+        try:
+            self.table_widget.close()
+        except:
+            pass
+
     def setting_dialog_open(self):
+        self.close_widget()
+
         ca_list = np.array([int(self.price_box.currentText().split(' : ')[-1]), \
                             int(self.dividend_box.currentText().split(' : ')[-1]), \
                             int(self.momentum_box.currentText().split(' : ')[-1]), \
