@@ -22,7 +22,16 @@ class Calculation():
         for factor in score_inverse_list:
             factor_characters_df = self.value_inverse(factor=factor, factor_characters_df=factor_characters_df)
         self.factor_characters_df = factor_characters_df
+
         self.factor_weight_df = factor_characters_df.iloc[:, :14]
+
+        self.tmp_normalized_factor_df = self.normalize_factor_df(factor_characters_df= self.original_factor_characters_df)
+
+        self.original_factor_characters_df['risk averse-aggresive'] = self.tmp_normalized_factor_df['SD']
+        self.original_factor_characters_df['value-growth'] = (self.tmp_normalized_factor_df['Growth_f_mean'] + self.tmp_normalized_factor_df['Investment_f_mean'] +  self.tmp_normalized_factor_df['Momentum_f_mean']) - (self.tmp_normalized_factor_df['Value_f_mean'] + self.tmp_normalized_factor_df['Contrarian_f_mean'] +  self.tmp_normalized_factor_df['Dividend_f_mean'])
+
+        self.original_factor_characters_df['passive-active'] = self.tmp_normalized_factor_df['TrackingError']
+        self.original_factor_characters_df['winratio-big jump'] = self.tmp_normalized_factor_df['UpsideFrequency'] - self.tmp_normalized_factor_df['MaxReturn']
 
     def value_inverse(self, factor: str, factor_characters_df: pd.DataFrame) -> pd.DataFrame:
         factor_characters_df[factor] = -factor_characters_df[factor]
@@ -59,6 +68,10 @@ class Calculation():
             ca_list[np.abs(ca_list).sum(1) == 0, :] += 1
             result = ca_list / np.reshape(np.abs(ca_list).max(1), (len(ca_list), 1))
             return result
+
+    def normalize_factor_df(self, factor_characters_df: pd.DataFrame) -> pd.DataFrame:
+        normalized_factor_df = factor_characters_df.apply(lambda x: self.calculation_normalized(x), axis=0)
+        return normalized_factor_df
 
     def make_normalized_factor_df(self, factor_characters_df: pd.DataFrame) -> pd.DataFrame:
         using_factor_attribution = [x[0] for x in self.char_factor_mapping_dict.values()]

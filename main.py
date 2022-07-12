@@ -10,6 +10,7 @@ if __name__ == '__main__':
 
     #window = widget_plot.MyWindow(calculation)
     window1 = widget_attribution.Attribution(calculation)
+    window1.combo_grid_box_event()
     window1.show()
     app.exec_()
 

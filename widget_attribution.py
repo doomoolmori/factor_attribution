@@ -41,19 +41,16 @@ class Attribution(QMainWindow):
         super().__init__()
 
         self.attribution_dict = {
-            'risk': 'SD',
-            'growth': 'Growth_f_mean',
-            'Value': 'Value_f_mean'
+            'risk averse-aggresive': 'risk averse-aggresive',
+            'value-growth': 'value-growth',
+            'passive-active' : 'passive-active',
+            'winratio-big jump' : 'winratio-big jump'
         }
-        attribution_dict = {
-            'risk': 'SD',
-            'growth': 'Growth_f_mean',
-            'Value': 'Value_f_mean'
-        }
+
         self.calculation = calculation
         self.quantile = 10
         self.factor_data_setting()
-        self.setGeometry(100, 200, 500, 400)
+        self.setGeometry(100, 200, 500, 600)
 
         self.make_combo_box_list()
         self.combo_box_list_set()
@@ -62,11 +59,11 @@ class Attribution(QMainWindow):
         self.lock_btn_list_set()
 
         self.clear_btn = QPushButton("clear", self)
-        self.clear_btn.setGeometry(300, 200, 50, 30)
+        self.clear_btn.setGeometry(350, 200, 50, 30)
         self.clear_btn.clicked.connect(self.clear_)
 
         self.setting_btn = QPushButton("set", self)
-        self.setting_btn.setGeometry(300, 100, 50, 30)
+        self.setting_btn.setGeometry(350, 100, 50, 30)
         self.setting_btn.clicked.connect(self.setting_)
 
         self.show()
@@ -92,29 +89,79 @@ class Attribution(QMainWindow):
             self.combo_box_set(combo, number=number)
 
     def make_combo_box_list(self):
+        self.standard_grid_1_combo = QComboBox(self)
         self.standard_1_combo = QComboBox(self)
+
+        self.standard_grid_2_combo = QComboBox(self)
         self.standard_2_combo = QComboBox(self)
+
+        self.standard_grid_3_combo = QComboBox(self)
         self.standard_3_combo = QComboBox(self)
-        self.standard_combo_list = [self.standard_1_combo, self.standard_2_combo, self.standard_3_combo]
+
+        self.standard_grid_4_combo = QComboBox(self)
+        self.standard_4_combo = QComboBox(self)
+
+        self.standard_grid_combo_list = [self.standard_grid_1_combo, self.standard_grid_2_combo, self.standard_grid_3_combo, self.standard_grid_4_combo]
+        self.standard_combo_list = [self.standard_1_combo, self.standard_2_combo, self.standard_3_combo, self.standard_4_combo]
 
     def combo_box_list_set(self):
+        for number, combo in enumerate(self.standard_grid_combo_list):
+            number = number + 1
+            self.combo_grid_set(combo, number=number)
+
         for number, combo in enumerate(self.standard_combo_list):
             number = number + 1
             self.combo_box_set(combo, number=number)
 
+    def combo_grid_set(self, widget, number):
+        widget.clear()
+        # widget.addItem(f' 특성({list(self.attribution_dict.keys())[number-1]}) {number} : 무관')
+        for i in range(len(list(self.attribution_dict.keys()))):
+            widget.addItem(f' 특성({list(self.attribution_dict.keys())[i]}) {number} : {i}')
+        # widget.setCurrentText(f' 특성({list(self.attribution_dict.keys())[number-1]}) {number} : 무관')
+        widget.setGeometry(10, 100 * number - 30, 250, 30)
+
+    def changed_print(self, value):
+        print("changed_print")
+        print(value)
+        changed_combo_grid_index = int(value.split(' : ')[0].split(')')[-1])
+        if changed_combo_grid_index == 1:
+            self.combo_box_set(self.standard_combo_list[0], number=changed_combo_grid_index)
+        elif changed_combo_grid_index == 2:
+            self.combo_box_set(self.standard_combo_list[1], number=changed_combo_grid_index)
+        elif changed_combo_grid_index == 3:
+            self.combo_box_set(self.standard_combo_list[2], number=changed_combo_grid_index)
+        elif changed_combo_grid_index == 4:
+            self.combo_box_set(self.standard_combo_list[3], number=changed_combo_grid_index)
+        print("changed_combo_grid_index")
+        print(changed_combo_grid_index)
+
+    def combo_grid_box_event(self):
+        self.standard_grid_1_combo.currentTextChanged.connect(self.changed_print)
+        self.standard_grid_2_combo.currentTextChanged.connect(self.changed_print)
+        self.standard_grid_3_combo.currentTextChanged.connect(self.changed_print)
+        self.standard_grid_4_combo.currentTextChanged.connect(self.changed_print)
+
     def combo_box_set(self, widget, number, range=[x for x in range(1, 10 + 1)]):
         widget.clear()
-        widget.addItem(f' 특성({list(self.attribution_dict.keys())[number-1]}) {number} : 무관')
+        grid_i = self.standard_grid_combo_list[number - 1].currentText().split(': ')[-1]
+        print("grid_i")
+        print(grid_i)
+        #widget.addItem(f' 특성({list(self.attribution_dict.keys())[number-1]}) {number} : 무관')
         for i in range:
-            widget.addItem(f' 특성({list(self.attribution_dict.keys())[number-1]}) {number} : {i}')
-        widget.setCurrentText(f' 특성({list(self.attribution_dict.keys())[number-1]}) {number} : 무관')
-        widget.setGeometry(10, 100 * number, 200, 30)
+            widget.addItem(f' 특성({list(self.attribution_dict.keys())[int(grid_i)]}) {number} : {i}')
+        #widget.setCurrentText(f' 특성({list(self.attribution_dict.keys())[number-1]}) {number} : 무관')
+        widget.setGeometry(10, 100 * number, 250, 30)
+
+
 
     def make_lock_btn_list(self):
         self.standard_1_lock = QPushButton('1-lock', self)
         self.standard_2_lock = QPushButton('2-lock', self)
         self.standard_3_lock = QPushButton('3-lock', self)
-        self.standard_lock_list = [self.standard_1_lock, self.standard_2_lock, self.standard_3_lock]
+        self.standard_4_lock = QPushButton('4-lock', self)
+
+        self.standard_lock_list = [self.standard_1_lock, self.standard_2_lock, self.standard_3_lock, self.standard_4_lock]
 
     def lock_btn_list_set(self):
         for number, lock in enumerate(self.standard_lock_list):
@@ -122,7 +169,7 @@ class Attribution(QMainWindow):
             self.lock_btn_set(lock, number=number)
 
     def lock_btn_set(self, widget, number):
-        widget.setGeometry(210, 100 * number, 50, 30)
+        widget.setGeometry(260, 100 * number, 50, 30)
         widget.clicked.connect(self.btn_locking)
 
 
@@ -131,43 +178,91 @@ class Attribution(QMainWindow):
         number = int(event.text().split('-')[0])
         self.standard_lock_list[number - 1].setDisabled(True)
         self.locking_item_calculation(number=number)
-        self.locking_combo(number=number)
+        #self.locking_combo(number=number)
 
     def locking_item_calculation(self, number):
         score = self.standard_combo_list[number - 1].currentText().split(' : ')[-1]
+        print("--- locking_item_calculation -- ")
+        dict_key_value = int( self.standard_grid_combo_list[number - 1].currentText().split(' : ')[-1] )
         key_list = list(self.attribution_dict.keys())
-        first_standard = self.attribution_dict[key_list[0]]
-        second_standard = self.attribution_dict[key_list[1]]
-        third_standard = self.attribution_dict[key_list[2]]
+        first_standard = self.attribution_dict[key_list[dict_key_value]]
+        second_standard = self.attribution_dict[key_list[dict_key_value]]
+        third_standard = self.attribution_dict[key_list[dict_key_value]]
+        fourth_standard = self.attribution_dict[key_list[dict_key_value]]
+        print("locked key :  " + str(key_list[dict_key_value]) )
 
         if number == 1:
             if score == '무관':
                 self.first_standard_df = self.qcut_df.copy()
-            else:
+                self.first_original_df = self.df.copy()
+            elif int(score) <= 5:
                 score = int(score)
-                self.first_standard_df = self.qcut_df[self.qcut_df[first_standard] <= score].copy()
+                self.first_standard_df = self.qcut_df[self.qcut_df[first_standard] <= 5].copy()
+                self.first_original_df = self.df[self.qcut_df[first_standard] <= 5].copy()
+
+            else:
+                self.first_standard_df = self.qcut_df[self.qcut_df[first_standard] > 5].copy()
+                self.first_original_df = self.df[self.qcut_df[first_standard] > 5].copy()
+
             print(self.first_standard_df)
             self.first_score = score
+
+            self.first_standard_df = self.first_original_df.apply(lambda x: pd.qcut(x, self.quantile, labels=False, duplicates='drop'))
+            self.first_standard_df += 1
 
         elif number == 2:
             if score == '무관':
                 self.second_standard_df = self.first_standard_df.copy()
+                self.second_original_df = self.first_original_df.copy()
             elif int(score) <= 5:
-                self.second_standard_df = self.first_standard_df[self.first_standard_df[second_standard] <= int(score)].copy()
+                self.second_standard_df = self.first_standard_df[self.first_standard_df[second_standard] <= 5].copy()
+                self.second_original_df = self.first_original_df[self.first_standard_df[second_standard] <= 5].copy()
+
             else:
-                self.second_standard_df = self.first_standard_df[self.first_standard_df[second_standard] > int(score)].copy()
+                self.second_standard_df = self.first_standard_df[self.first_standard_df[second_standard] > 5].copy()
+                self.second_original_df = self.first_original_df[self.first_standard_df[second_standard] > 5].copy()
+
             print(self.second_standard_df)
             self.second_score = score
+            self.second_standard_df = self.second_original_df.apply(lambda x: pd.qcut(x, self.quantile, labels=False, duplicates='drop'))
+            self.second_standard_df += 1
+
 
         elif number == 3:
             if score == '무관':
                 self.third_standard_df = self.second_standard_df.copy()
+                self.third_original_df = self.second_original_df.copy()
+
             elif int(score) <= 5:
-                self.third_standard_df = self.second_standard_df[self.second_standard_df[third_standard] <= int(score)].copy()
+                self.third_standard_df = self.second_standard_df[self.second_standard_df[third_standard] <= int(5)].copy()
+                self.third_original_df = self.second_original_df[self.second_standard_df[third_standard] <= int(5)].copy()
+
             else:
-                self.third_standard_df = self.second_standard_df[self.second_standard_df[third_standard] > int(score)].copy()
+                self.third_standard_df = self.second_standard_df[self.second_standard_df[third_standard] > int(5)].copy()
+                self.third_original_df = self.second_original_df[self.second_standard_df[third_standard] > int(5)].copy()
+
             print(self.third_standard_df)
             self.third_score = score
+            self.third_standard_df = self.third_original_df.apply(lambda x: pd.qcut(x, self.quantile, labels=False, duplicates='drop'))
+            self.third_standard_df += 1
+
+
+        elif number == 4:
+            if score == '무관':
+                self.fourth_standard_df = self.third_standard_df.copy()
+                self.fourth_original_df = self.third_original_df.copy()
+
+            elif int(score) <= 5:
+                self.fourth_standard_df = self.third_standard_df[self.third_standard_df[fourth_standard] <= int(5)].copy()
+                self.fourth_original_df = self.third_original_df[self.third_standard_df[fourth_standard] <= int(5)].copy()
+
+            else:
+                self.fourth_standard_df = self.third_standard_df[self.third_standard_df[fourth_standard] > int(5)].copy()
+                self.fourth_original_df = self.third_original_df[self.third_standard_df[fourth_standard] > int(5)].copy()
+
+            print(self.fourth_standard_df)
+            self.fourth_score = score
+
 
 
     def locking_combo(self, number):
@@ -176,6 +271,8 @@ class Attribution(QMainWindow):
         first_standard = self.attribution_dict[key_list[0]]
         second_standard = self.attribution_dict[key_list[1]]
         third_standard = self.attribution_dict[key_list[2]]
+        fourth_standard = self.attribution_dict[key_list[3]]
+
         if number == 1:
             first_possible = self.first_standard_df[first_standard].unique()
             first_possible.sort()
@@ -195,6 +292,12 @@ class Attribution(QMainWindow):
             set_name = f' 특성({list(self.attribution_dict.keys())[2]}) 3 : 무관'
             self.standard_combo_list[2].setCurrentText(set_name)
 
+            fourth_possible = self.first_standard_df[fourth_standard].unique()
+            fourth_possible.sort()
+            self.combo_box_set(self.standard_combo_list[3], number=4, range=fourth_possible)
+            set_name = f' 특성({list(self.attribution_dict.keys())[3]}) 3 : 무관'
+            self.standard_combo_list[3].setCurrentText(set_name)
+
         elif number == 2:
             second_possible = self.second_standard_df[second_standard].unique()
             second_possible.sort()
@@ -208,6 +311,11 @@ class Attribution(QMainWindow):
             set_name = f' 특성({list(self.attribution_dict.keys())[2]}) 3 : 무관'
             self.standard_combo_list[2].setCurrentText(set_name)
 
+            fourth_possible = self.second_standard_df[fourth_standard].unique()
+            fourth_possible.sort()
+            self.combo_box_set(self.standard_combo_list[3], number=4, range=fourth_possible)
+            set_name = f' 특성({list(self.attribution_dict.keys())[3]}) 3 : 무관'
+            self.standard_combo_list[3].setCurrentText(set_name)
 
         elif number == 3:
             third_possible = self.third_standard_df[third_standard].unique()
@@ -216,9 +324,21 @@ class Attribution(QMainWindow):
             set_name = f' 특성({list(self.attribution_dict.keys())[2]}) 3 : {self.third_score}'
             self.standard_combo_list[2].setCurrentText(set_name)
 
+            fourth_possible = self.third_standard_df[fourth_standard].unique()
+            fourth_possible.sort()
+            self.combo_box_set(self.standard_combo_list[3], number=4, range=fourth_possible)
+            set_name = f' 특성({list(self.attribution_dict.keys())[3]}) 3 : 무관'
+            self.standard_combo_list[3].setCurrentText(set_name)
+
+        elif number == 4:
+            fourth_possible = self.fourth_standard_df[fourth_standard].unique()
+            fourth_possible.sort()
+            self.combo_box_set(self.standard_combo_list[3], number=4, range=fourth_possible)
+            set_name = f' 특성({list(self.attribution_dict.keys())[3]}) 3 : 무관'
+            self.standard_combo_list[3].setCurrentText(set_name)
 
     def setting_(self):
-        if len(self.third_standard_df) > 0:
-            self.calculation.final_df = self.calculation.original_factor_characters_df.loc[self.third_standard_df.index]
+        if len(self.fourth_standard_df) > 0:
+            self.calculation.final_df = self.calculation.original_factor_characters_df.loc[self.fourth_standard_df.index]
         self.w = wp.MyWindow(self.calculation)
         self.w.show()
