@@ -66,10 +66,10 @@ class Calculation():
                                apply(lambda x: self.calculation_normalized(x), axis=0)
         return normalized_factor_df
 
-    def asv_quantile_average_weight(self, asv: pd.DataFrame, quantile: int) -> np.array:
+    def asv_quantile_average_weight(self, factor_weight_df: pd.DataFrame, asv: pd.DataFrame, quantile: int) -> np.array:
         qcut_df = asv.apply(lambda x: pd.qcut(x, quantile, labels=False))
         qcut_df = (quantile - 1) - qcut_df
-        result_array = self.make_attribution_and_factor_weight_array(self.factor_weight_df, qcut_df, quantile)
+        result_array = self.make_attribution_and_factor_weight_array(factor_weight_df, qcut_df, quantile)
         return result_array
 
     def quantile_weight_beta(self, average_weight_df: pd.DataFrame, quantile: int) -> pd.DataFrame:
@@ -140,8 +140,7 @@ class Calculation():
         quantile = 10
 
         ## 1단계 특성, 팩터비중, 특성 퀀타일 어레이 생성
-        quantile_weight_array = self.asv_quantile_average_weight(self.asv, quantile)
-
+        quantile_weight_array = self.asv_quantile_average_weight(self.factor_weight_df, self.asv, quantile)
         ## for 문 돌면서 모든 경우 처리
         average_weight_df = pd.DataFrame(quantile_weight_array[0, :, :])
         average_weight_df.index = self.factor_weight_df.columns
@@ -159,11 +158,27 @@ class Calculation():
         ## 4단계 절대적으로 필터링 하는 단계
         if type(self.final_df) == int:
             final_df = top_n_factor_characters_df.sort_values(by='Sharpe', ascending=False)
+            result['final_factor_df'] = final_df
+
         else:
-            final_df = self.final_df
-        result['asv'] = self.asv
+            ## 특성 락킹된 값있으면 사용
+            normalized_ca_locking = self.make_normalized_ca(ca_list)
+            normalized_factor_df_locking = self.make_normalized_factor_df(factor_characters_df=self.factor_characters_df.loc[self.final_df.index])
+            asv_locking = pd.DataFrame(normalized_factor_df_locking.values @ normalized_ca_locking)
+            asv_locking.index = normalized_factor_df_locking.index
+            quantile_weight_array_locking = self.asv_quantile_average_weight(self.factor_weight_df.loc[self.final_df.index], asv_locking, quantile)
+            ## for 문 돌면서 모든 경우 처리
+            average_weight_df_locking = pd.DataFrame(quantile_weight_array_locking[0, :, :])
+            average_weight_df_locking.index = self.factor_weight_df.columns
+            average_weight_df_locking.columns = [f'{x + 1}_q' for x in range(quantile)]
+            asv_rank_locking = asv_locking.rank(ascending=False)
+            final_df_locking = self.final_df.loc[asv_rank_locking[asv_rank_locking <= top_N].dropna().index]
+
+
         result['average_weight_df'] = average_weight_df
-        result['final_factor_df'] = final_df
+        result['asv'] = self.asv
+        result['asv_locking'] = asv_locking
+        result['final_factor_df'] = final_df_locking
         key = result.keys()
         with pd.ExcelWriter(f'out/{ca_list}.xlsx') as writer:
             for key_name in key:

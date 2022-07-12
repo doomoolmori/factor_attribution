@@ -218,6 +218,7 @@ class Attribution(QMainWindow):
 
 
     def setting_(self):
-        self.calculation.final_df = self.calculation.original_factor_characters_df.loc[self.third_standard_df.index]
+        if len(self.third_standard_df) > 0:
+            self.calculation.final_df = self.calculation.original_factor_characters_df.loc[self.third_standard_df.index]
         self.w = wp.MyWindow(self.calculation)
         self.w.show()
