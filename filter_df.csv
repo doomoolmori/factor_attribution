@@ -1,0 +1,22 @@
+"","Filter","direction","tag"
+"1","Price Trend - 26 Week",TRUE,1
+"2","Price/Earnings Ratio - Current",TRUE,2
+"3","Market Capitalization - Current (U.S.$)",TRUE,3
+"4","Foreign Sales % Total Sales",TRUE,4
+"5","Fixed Assets % Common Equity",TRUE,5
+"6","Long Term Debt % Common Equity",TRUE,6
+"7","Capital Expenditure % Total Assets",TRUE,7
+"8","Turnover Rate",TRUE,8
+"9","Operating Income - 1 Yr Annual Growth",TRUE,9
+"10","Net Margin",TRUE,10
+"11","Price Trend - 26 Week",FALSE,11
+"12","Price/Earnings Ratio - Current",FALSE,12
+"13","Market Capitalization - Current (U.S.$)",FALSE,13
+"14","Foreign Sales % Total Sales",FALSE,14
+"15","Fixed Assets % Common Equity",FALSE,15
+"16","Long Term Debt % Common Equity",FALSE,16
+"17","Capital Expenditure % Total Assets",FALSE,17
+"18","Turnover Rate",FALSE,18
+"19","Operating Income - 1 Yr Annual Growth",FALSE,19
+"20","Net Margin",FALSE,20
+"21",NA,NA,21

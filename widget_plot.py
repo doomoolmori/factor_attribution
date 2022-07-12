@@ -34,8 +34,6 @@ box_plot_factor = ['Bankruptcy Score_f_mean', 'Contrarian_f_mean', 'Dividend_f_m
              'Investment_f_mean', 'Leverage_f_mean', 'Liquidity_f_mean', 'Momentum_f_mean', 'Size_f_mean',
              'Value_f_mean']
 
-
-
 class MyWindow(QMainWindow):
     def __init__(self, calculation):
         super().__init__()
@@ -82,6 +80,7 @@ class MyWindow(QMainWindow):
         self.setting_btn = QPushButton("setting", self)
         self.setting_btn.move(300, 150)
         self.setting_btn.clicked.connect(self.setting_dialog_open)
+
 
     def close_widget(self):
         try:
@@ -311,9 +310,6 @@ class MyWindow(QMainWindow):
         widget.scatter[plot_number].set_ylabel(f'{y}')
         widget.scatter[plot_number].set_zlabel(f'{z}')
 
-
-
-
     ### table
     def final_table(self, widget, calculation_result):
         df = calculation_result['final_factor_df']
@@ -337,7 +333,5 @@ class MyWindow(QMainWindow):
                 value = df.loc[row][column]
                 item = QTableWidgetItem(str(value))
                 widget.setItem(row_index, col_index, item)
-
-
 
 

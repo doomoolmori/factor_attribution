@@ -5,6 +5,7 @@ from itertools import *
 
 class Calculation():
     def __init__(self):
+        self.final_df = int(0)
         self.char_list = ['Value', 'Dividend', 'Momentum', 'Investment', 'Risk', 'WinRatio', 'Market']
         self.char_factor_mapping_dict = {'Value': ['Value_f_mean'],
                                     'Dividend': ['Dividend_f_mean'],
@@ -156,8 +157,10 @@ class Calculation():
         re_filtered_normalized_factor_df = self.re_filtering(quantile_weight_beta_df, self.normalized_ca)
         """
         ## 4단계 절대적으로 필터링 하는 단계
-        final_df = top_n_factor_characters_df.sort_values(by='Sharpe', ascending=False)
-
+        if type(self.final_df) == int:
+            final_df = top_n_factor_characters_df.sort_values(by='Sharpe', ascending=False)
+        else:
+            final_df = self.final_df
         result['asv'] = self.asv
         result['average_weight_df'] = average_weight_df
         result['final_factor_df'] = final_df
