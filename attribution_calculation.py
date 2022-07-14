@@ -37,8 +37,8 @@ class Calculation():
                                                               self.tmp_normalized_factor_df['Dividend_f_mean'])
 
         self.original_factor_characters_df['passive-active'] = self.tmp_normalized_factor_df['TrackingError']
-        self.original_factor_characters_df['winratio-big jump'] = self.tmp_normalized_factor_df['UpsideFrequency'] -\
-                                                                  self.tmp_normalized_factor_df['MaxReturn']
+        self.original_factor_characters_df['winratio-big jump'] = self.tmp_normalized_factor_df['MaxReturn'] - self.tmp_normalized_factor_df['UpsideFrequency']
+
 
     def value_inverse(self, factor: str, factor_characters_df: pd.DataFrame) -> pd.DataFrame:
         factor_characters_df[factor] = -factor_characters_df[factor]
