@@ -343,25 +343,22 @@ class Attribution(QMainWindow):
 
     def final_score_calculation(self):
         score_sum_list = []
-        weight_list = [1, 0.85, 0.7, 0.55]
+        weight_list = [1, 0.85, 0.7, 0.6]
         standard_score_list = np.array([int(self.first_score), int(self.second_score),
                                         int(self.third_score), int(self.fourth_score)])
-
         if standard_score_list.std() != 0:
             standard_score_list = (standard_score_list - standard_score_list.sum()) / standard_score_list.std()
 
-        score_df = self.fourth_original_df.apply(lambda x: self.calculation.calculation_normalized(x), axis=0)
+        score_df = self.fourth_original_df
         for i, number in enumerate([1, 2, 3, 4]):
             score_sum_list.append(score_df[self.get_standard_name(number)] \
                                   * weight_list[i] * (int(standard_score_list[i])))
         
         #score top 30개 고름
         total_idx = pd.concat(score_sum_list, 1).sum(1).sort_values()[::-1][:30]
-
         #self.calculation.asv_4 = pd.concat(score_sum_list, 1).sum(1).sort_values()[::-1]
         #self.calculation.fourth_original_df = self.fourth_original_df
         return total_idx.index
-
 
 
     def setting_(self):
