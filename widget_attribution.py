@@ -180,6 +180,7 @@ class Attribution(QMainWindow):
         self.locking_item_calculation(number=number)
         #self.locking_combo(number=number)
 
+
     def locking_item_calculation(self, number):
         score = self.standard_combo_list[number - 1].currentText().split(' : ')[-1]
         print("--- locking_item_calculation -- ")
@@ -263,10 +264,7 @@ class Attribution(QMainWindow):
             print(self.fourth_standard_df)
             self.fourth_score = score
 
-
-
     def locking_combo(self, number):
-        self.qcut_df
         key_list = list(self.attribution_dict.keys())
         first_standard = self.attribution_dict[key_list[0]]
         second_standard = self.attribution_dict[key_list[1]]
@@ -337,8 +335,38 @@ class Attribution(QMainWindow):
             set_name = f' 특성({list(self.attribution_dict.keys())[3]}) 3 : 무관'
             self.standard_combo_list[3].setCurrentText(set_name)
 
+    def get_standard_name(self, number):
+        dict_key_value = int(self.standard_grid_combo_list[number - 1].currentText().split(' : ')[-1])
+        key_list = list(self.attribution_dict.keys())
+        standard = self.attribution_dict[key_list[dict_key_value]]
+        return standard
+
+    def final_score_calculation(self):
+        score_sum_list = []
+        weight_list = [1, 0.85, 0.7, 0.55]
+        standard_score_list = np.array([int(self.first_score), int(self.second_score),
+                                        int(self.third_score), int(self.fourth_score)])
+
+        if standard_score_list.std() != 0:
+            standard_score_list = (standard_score_list - standard_score_list.sum()) / standard_score_list.std()
+
+        score_df = self.fourth_original_df.apply(lambda x: self.calculation.calculation_normalized(x), axis=0)
+        for i, number in enumerate([1, 2, 3, 4]):
+            score_sum_list.append(score_df[self.get_standard_name(number)] \
+                                  * weight_list[i] * (int(standard_score_list[i])))
+        
+        #score top 30개 고름
+        total_idx = pd.concat(score_sum_list, 1).sum(1).sort_values()[::-1][:30]
+
+        #self.calculation.asv_4 = pd.concat(score_sum_list, 1).sum(1).sort_values()[::-1]
+        #self.calculation.fourth_original_df = self.fourth_original_df
+        return total_idx.index
+
+
+
     def setting_(self):
         if len(self.fourth_standard_df) > 0:
-            self.calculation.final_df = self.calculation.original_factor_characters_df.loc[self.fourth_standard_df.index]
+            total_idx = self.final_score_calculation()
+            self.calculation.final_df = self.calculation.original_factor_characters_df.loc[total_idx]
         self.w = wp.MyWindow(self.calculation)
         self.w.show()

@@ -6,6 +6,7 @@ from itertools import *
 class Calculation():
     def __init__(self):
         self.final_df = int(0)
+        self.fourth_original_df = int(0)
         self.char_list = ['Value', 'Dividend', 'Momentum', 'Investment', 'Risk', 'WinRatio', 'Market']
         self.char_factor_mapping_dict = {'Value': ['Value_f_mean'],
                                     'Dividend': ['Dividend_f_mean'],
@@ -157,16 +158,26 @@ class Calculation():
         result = {}
         self.init_setting(ca_list)
         quantile = 10
+        if type(self.fourth_original_df) == int:
+            ## 1단계 특성, 팩터비중, 특성 퀀타일 어레이 생성
+            quantile_weight_array = self.asv_quantile_average_weight(self.factor_weight_df, self.asv, quantile)
+            ## for 문 돌면서 모든 경우 처리
+            average_weight_df = pd.DataFrame(quantile_weight_array[0, :, :])
+            average_weight_df.index = self.factor_weight_df.columns
+            average_weight_df.columns = [f'{x + 1}_q' for x in range(quantile)]
+            asv_rank = self.asv.rank(ascending=False)
+            top_n_factor_characters_df = self.factor_characters_df.loc[asv_rank[asv_rank <= top_N].dropna().index]
+        else:
+            ## 1단계 특성, 팩터비중, 특성 퀀타일 어레이 생성
+            a = self.fourth_original_df.iloc[:, :14]
+            quantile_weight_array = self.asv_quantile_average_weight(a, pd.DataFrame(self.asv_4), quantile)
+            ## for 문 돌면서 모든 경우 처리
+            average_weight_df = pd.DataFrame(quantile_weight_array[0, :, :])
+            average_weight_df.index = self.fourth_original_df.columns[:14]
+            average_weight_df.columns = [f'{x + 1}_q' for x in range(quantile)]
+            asv_rank = self.asv_4.rank(ascending=False)
+            top_n_factor_characters_df = self.fourth_original_df.iloc[:, 14:].loc[asv_rank[asv_rank <= top_N].dropna().index]
 
-        ## 1단계 특성, 팩터비중, 특성 퀀타일 어레이 생성
-        quantile_weight_array = self.asv_quantile_average_weight(self.factor_weight_df, self.asv, quantile)
-        ## for 문 돌면서 모든 경우 처리
-        average_weight_df = pd.DataFrame(quantile_weight_array[0, :, :])
-        average_weight_df.index = self.factor_weight_df.columns
-        average_weight_df.columns = [f'{x + 1}_q' for x in range(quantile)]
-
-        asv_rank = self.asv.rank(ascending=False)
-        top_n_factor_characters_df = self.factor_characters_df.loc[asv_rank[asv_rank <= top_N].dropna().index]
 
         """
         ## 2단계 특성점수(퀀타일)와 팩터비중간 리그레션
@@ -194,7 +205,6 @@ class Calculation():
             final_df_locking = self.final_df.loc[asv_rank_locking[asv_rank_locking <= top_N].dropna().index]
 
         result['average_weight_df'] = average_weight_df
-        result['asv'] = self.asv
         result['asv_locking'] = asv_locking
         result['final_factor_df'] = final_df_locking
         key = result.keys()
