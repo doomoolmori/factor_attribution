@@ -28,10 +28,16 @@ class Calculation():
         self.tmp_normalized_factor_df = self.normalize_factor_df(factor_characters_df= self.original_factor_characters_df)
 
         self.original_factor_characters_df['risk averse-aggresive'] = self.tmp_normalized_factor_df['SD']
-        self.original_factor_characters_df['value-growth'] = (self.tmp_normalized_factor_df['Growth_f_mean'] + self.tmp_normalized_factor_df['Investment_f_mean'] +  self.tmp_normalized_factor_df['Momentum_f_mean']) - (self.tmp_normalized_factor_df['Value_f_mean'] + self.tmp_normalized_factor_df['Contrarian_f_mean'] +  self.tmp_normalized_factor_df['Dividend_f_mean'])
+        self.original_factor_characters_df['value-growth'] = (self.tmp_normalized_factor_df['Growth_f_mean'] +
+                                                              self.tmp_normalized_factor_df['Investment_f_mean'] +
+                                                              self.tmp_normalized_factor_df['Momentum_f_mean']) - \
+                                                             (self.tmp_normalized_factor_df['Value_f_mean'] +
+                                                              self.tmp_normalized_factor_df['Contrarian_f_mean'] +
+                                                              self.tmp_normalized_factor_df['Dividend_f_mean'])
 
         self.original_factor_characters_df['passive-active'] = self.tmp_normalized_factor_df['TrackingError']
-        self.original_factor_characters_df['winratio-big jump'] = self.tmp_normalized_factor_df['UpsideFrequency'] - self.tmp_normalized_factor_df['MaxReturn']
+        self.original_factor_characters_df['winratio-big jump'] = self.tmp_normalized_factor_df['UpsideFrequency'] -\
+                                                                  self.tmp_normalized_factor_df['MaxReturn']
 
     def value_inverse(self, factor: str, factor_characters_df: pd.DataFrame) -> pd.DataFrame:
         factor_characters_df[factor] = -factor_characters_df[factor]
@@ -80,7 +86,7 @@ class Calculation():
         return normalized_factor_df
 
     def asv_quantile_average_weight(self, factor_weight_df: pd.DataFrame, asv: pd.DataFrame, quantile: int) -> np.array:
-        qcut_df = asv.apply(lambda x: pd.qcut(x, quantile, labels=False))
+        qcut_df = asv.apply(lambda x: pd.qcut(x, quantile, labels=False, duplicates='drop'))
         qcut_df = (quantile - 1) - qcut_df
         result_array = self.make_attribution_and_factor_weight_array(factor_weight_df, qcut_df, quantile)
         return result_array
@@ -186,7 +192,6 @@ class Calculation():
             average_weight_df_locking.columns = [f'{x + 1}_q' for x in range(quantile)]
             asv_rank_locking = asv_locking.rank(ascending=False)
             final_df_locking = self.final_df.loc[asv_rank_locking[asv_rank_locking <= top_N].dropna().index]
-
 
         result['average_weight_df'] = average_weight_df
         result['asv'] = self.asv
