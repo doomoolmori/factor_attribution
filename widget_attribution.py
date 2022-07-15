@@ -355,10 +355,9 @@ class Attribution(QMainWindow):
                                   * weight_list[i] * (int(standard_score_list[i])))
         
         #score top 30개 고름
-        total_idx = pd.concat(score_sum_list, 1).sum(1).sort_values()[::-1][:30]
-        #self.calculation.asv_4 = pd.concat(score_sum_list, 1).sum(1).sort_values()[::-1]
-        #self.calculation.fourth_original_df = self.fourth_original_df
-        return total_idx.index
+        #total_idx = pd.concat(score_sum_list, 1).sum(1).sort_values()[::-1]
+        self.calculation.tsv = pd.concat(score_sum_list, 1).sum(1).sort_values()[::-1]
+        self.calculation.fourth_original_df = self.fourth_original_df
 
 
     def setting_(self):
