@@ -277,4 +277,3 @@ class DefaultProcessCalculation():
 
         self.data_container.default_process_tsv = pd.concat(score_sum_list, 1).sum(1).sort_values()[::-1]
         self.data_container.default_process_df = self.fourth_original_df
-        #print(self.data_container.default_process_df)

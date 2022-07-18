@@ -13,39 +13,41 @@ import widget_plot as wp
 import data_process as dtp
 
 using_factor = ['Bankruptcy Score_f_mean', 'Contrarian_f_mean', 'Dividend_f_mean', 'Earning Momentum_f_mean',
-             'Earnings Quality_f_mean', 'Financial Quality_f_mean', 'Growth_f_mean', 'Information Uncertainty_f_mean',
-             'Investment_f_mean', 'Leverage_f_mean', 'Liquidity_f_mean', 'Momentum_f_mean', 'Size_f_mean',
-             'Value_f_mean',
-             'V1_f_mean', 'Academic & Educational Services_f_mean',
-             'Basic Materials_f_mean', 'Consumer Non-Cyclicals_f_mean',
-             'Cyclical Consumer Goods & Services_f_mean', 'Energy_f_mean',
-             'Financials_f_mean', 'Healthcare_f_mean',
-             'Industrials_f_mean', 'Real Estate_f_mean',
-             'Technology_f_mean', 'Utilities_f_mean',
-             'sector_centralization',
-             'Return', 'SD', 'Sharpe', 'MinReturn', 'MaxReturn',
-             'UpsideFrequency', 'UpCapture', 'DownCapture', 'UpNumber', 'DownNumber', 'UpPercent', 'DownPercent',
-             'AverageDrawdown.Factor', 'maxDrawdown',
-             'TrackingError', 'PainIndex.Factor',
-             'AverageLength.Factor', 'AverageRecovery.Factor',
-             'CDD', 'VaR.Factor', 'CVaR.Factor',
-             'Alpha', 'Beta', 'Beta.Bull', 'Beta.Bear',
-             'turnover',
-             'cpi_beta', 'cpi_beta.bull', 'cpi_beta.bear',
-             'realrate_beta', 'realrate_beta.bull', 'realrate_beta.bear']
+                'Earnings Quality_f_mean', 'Financial Quality_f_mean', 'Growth_f_mean',
+                'Information Uncertainty_f_mean',
+                'Investment_f_mean', 'Leverage_f_mean', 'Liquidity_f_mean', 'Momentum_f_mean', 'Size_f_mean',
+                'Value_f_mean',
+                'V1_f_mean', 'Academic & Educational Services_f_mean',
+                'Basic Materials_f_mean', 'Consumer Non-Cyclicals_f_mean',
+                'Cyclical Consumer Goods & Services_f_mean', 'Energy_f_mean',
+                'Financials_f_mean', 'Healthcare_f_mean',
+                'Industrials_f_mean', 'Real Estate_f_mean',
+                'Technology_f_mean', 'Utilities_f_mean',
+                'sector_centralization',
+                'Return', 'SD', 'Sharpe', 'MinReturn', 'MaxReturn',
+                'UpsideFrequency', 'UpCapture', 'DownCapture', 'UpNumber', 'DownNumber', 'UpPercent', 'DownPercent',
+                'AverageDrawdown.Factor', 'maxDrawdown',
+                'TrackingError', 'PainIndex.Factor',
+                'AverageLength.Factor', 'AverageRecovery.Factor',
+                'CDD', 'VaR.Factor', 'CVaR.Factor',
+                'Alpha', 'Beta', 'Beta.Bull', 'Beta.Bear',
+                'turnover',
+                'cpi_beta', 'cpi_beta.bull', 'cpi_beta.bear',
+                'realrate_beta', 'realrate_beta.bull', 'realrate_beta.bear']
 
 box_plot_factor = ['Bankruptcy Score_f_mean', 'Contrarian_f_mean', 'Dividend_f_mean', 'Earning Momentum_f_mean',
-             'Earnings Quality_f_mean', 'Financial Quality_f_mean', 'Growth_f_mean', 'Information Uncertainty_f_mean',
-             'Investment_f_mean', 'Leverage_f_mean', 'Liquidity_f_mean', 'Momentum_f_mean', 'Size_f_mean',
-             'Value_f_mean']
+                   'Earnings Quality_f_mean', 'Financial Quality_f_mean', 'Growth_f_mean',
+                   'Information Uncertainty_f_mean',
+                   'Investment_f_mean', 'Leverage_f_mean', 'Liquidity_f_mean', 'Momentum_f_mean', 'Size_f_mean',
+                   'Value_f_mean']
+
 
 class OptionalProcessWidget(QMainWindow):
     def __init__(self, data_container):
-        aa = OptionalProcessCalculation(data_container)
+        self.opc = OptionalProcessCalculation(data_container)
 
         super().__init__()
-        self.calculation = data_container
-        print(data_container.default_process_df)
+        print(self.opc.data_container.default_process_df)
         self.setGeometry(100, 200, 500, 400)
         self.setWindowTitle("PyQt")
         self.setWindowIcon(QIcon("icon.png"))
@@ -79,14 +81,20 @@ class OptionalProcessWidget(QMainWindow):
         self.winratio_box.setCurrentText(f'winratio_attribution : 0')
         self.market_box.setCurrentText(f'market_attribution : 0')
 
-        self.top_N = QComboBox(self)
-        self.top_N.setGeometry(300, 100, 200, 30)
+        self.default_top_N = QComboBox(self)
+        self.default_top_N.setGeometry(300, 100, 200, 30)
         for i in range(1, 11):
-            self.top_N.addItem(f'top_N : {i * 10}')
-        self.top_N.setCurrentText(f'top_N : 30')
+            self.default_top_N.addItem(f'default_top_N : {i * 50}')
+        self.default_top_N.setCurrentText(f'default_top_N : 100')
+
+        self.optional_top_N = QComboBox(self)
+        self.optional_top_N.setGeometry(300, 150, 200, 30)
+        for i in range(1, 11):
+            self.optional_top_N.addItem(f'optional_top_N : {i * 10}')
+        self.optional_top_N.setCurrentText(f'optional_top_N : 100')
 
         self.setting_btn = QPushButton("setting", self)
-        self.setting_btn.move(300, 150)
+        self.setting_btn.move(300, 200)
         self.setting_btn.clicked.connect(self.setting_dialog_open)
 
     def close_widget(self):
@@ -119,9 +127,13 @@ class OptionalProcessWidget(QMainWindow):
         if np.abs(ca_list).sum() == 0:
             ca_list += 1
         self.ca_list = ca_list
-        top_N = int(self.top_N.currentText().split(' : ')[-1])
+        default_top_N = int(self.default_top_N.currentText().split(' : ')[-1])
+        optional_top_N = int(self.optional_top_N.currentText().split(' : ')[-1])
+
         print(ca_list)
-        calculation_result = self.calculation.make_result_dict(ca_list=ca_list, top_N=top_N)
+        calculation_result = self.opc.make_result_dict(ca_list=ca_list,
+                                                       default_top_n=default_top_N,
+                                                       optional_top_n=optional_top_N)
 
         self.surface_and_bar_widget = QWidget()
         self.box_widget = QWidget()
@@ -199,25 +211,24 @@ class OptionalProcessWidget(QMainWindow):
         widget.show()
 
     def plot_score_box(self, widget, result):
-        df = result['normalized_factor_df']
-        final_df = result['final_factor_df']
+        df = result['normalized_factor_df'][self.opc.char_factor_mapping_dict.values()]
+        final_df = result['final_factor_df'][self.opc.char_factor_mapping_dict.values()]
         widget.box0.boxplot(np.array(df))
-        for i, score_name in enumerate(self.calculation.char_list):
-            final_score = df[self.calculation.char_factor_mapping_dict[score_name]].loc[final_df.index]
+        for i, score_name in enumerate(self.opc.char_list):
+            final_score = df[self.opc.char_factor_mapping_dict[score_name]].loc[final_df.index]
             y = np.array([final_score.mean() for x in range(5)])
             x = np.array([i + 0.98, i + 0.99, i + 1, i + 1.01, i + 1.02])
             widget.box0.plot(x, y, 'r.', alpha=1)
-        widget.box0.set_xticklabels(labels=self.calculation.char_list, fontsize=8)
+        widget.box0.set_xticklabels(labels=self.opc.char_list, fontsize=8)
         title = ''
-        for i, name in enumerate(self.calculation.char_list):
+        for i, name in enumerate(self.opc.char_list):
             title = f'{title}  {name}:{self.ca_list[i]}'
         widget.box0.set_title(title)
 
-        df1 = self.calculation.original_factor_characters_df[box_plot_factor]
-        normalized_df1 = df1.apply(lambda x: self.calculation.calculation_normalized(x), axis=0)
-        widget.box1.boxplot(np.array(normalized_df1))
-        for i, score_name in enumerate(normalized_df1.columns):
-            final_score = normalized_df1[score_name].loc[final_df.index]
+        df1 = result['normalized_factor_df'][box_plot_factor]
+        widget.box1.boxplot(np.array(df1))
+        for i, score_name in enumerate(df1.columns):
+            final_score = df1[score_name].loc[final_df.index]
             y = np.array([final_score.mean() for x in range(5)])
             x = np.array([i + 0.98, i + 0.99, i + 1, i + 1.01, i + 1.02])
             widget.box1.plot(x, y, 'r.', alpha=1)
@@ -225,7 +236,6 @@ class OptionalProcessWidget(QMainWindow):
         for name in box_plot_factor:
             title_list.append(name.split('_')[0])
         widget.box1.set_xticklabels(labels=title_list, fontsize=8)
-
 
     def score_scatter_plot(self, widget, calculation_result):
         self.three_d_scatter_canvas(widget)
@@ -276,14 +286,12 @@ class OptionalProcessWidget(QMainWindow):
         widget.scatter1_btn.move(1310, 10)
         widget.show()
 
-
     def plot_score_scatter(self, widget, result):
         final_df = result['final_factor_df']
         widget.scatter0_btn.clicked.connect(lambda: self.scatter_3D(final_df=final_df, plot_number=0, widget=widget))
         widget.scatter1_btn.clicked.connect(lambda: self.scatter_3D(final_df=final_df, plot_number=1, widget=widget))
 
-
-    def scatter_3D(self, final_df:pd.DataFrame, plot_number:int, widget):
+    def scatter_3D(self, final_df: pd.DataFrame, plot_number: int, widget):
         widget.scatter[plot_number].clear()
         if plot_number == 0:
             x = widget.x0_box.currentText().split(' : ')[-1]
@@ -293,12 +301,9 @@ class OptionalProcessWidget(QMainWindow):
             x = widget.x1_box.currentText().split(' : ')[-1]
             y = widget.y1_box.currentText().split(' : ')[-1]
             z = widget.z1_box.currentText().split(' : ')[-1]
-        X = self.calculation.original_factor_characters_df[x]
-        X = (X - X.mean()) / X.std()
-        Y = self.calculation.original_factor_characters_df[y]
-        Y = (Y - Y.mean()) / Y.std()
-        Z = self.calculation.original_factor_characters_df[z]
-        Z = (Z - Z.mean()) / Z.std()
+        X = self.opc.data_container.normalized_factor_value_df[x]
+        Y = self.opc.data_container.normalized_factor_value_df[y]
+        Z = self.opc.data_container.normalized_factor_value_df[z]
 
         all_x = np.array(X)
         all_y = np.array(Y)
@@ -311,7 +316,8 @@ class OptionalProcessWidget(QMainWindow):
 
         widget.scatter[plot_number].scatter(final_x, final_y, final_z, marker='o', s=40, cmap='Greens')
         for i in range(len(final_df.index)):
-            widget.scatter[plot_number].text3D(final_x[i], final_y[i], final_z[i], str(i) + " : " + str(final_df.index[i]))
+            widget.scatter[plot_number].text3D(final_x[i], final_y[i], final_z[i],
+                                               str(i) + " : " + str(final_df.index[i]))
 
         widget.scatter[plot_number].set_xlabel(f'{x}')
         widget.scatter[plot_number].set_ylabel(f'{y}')
@@ -346,19 +352,15 @@ class OptionalProcessCalculation():
     def __init__(self, data_container):
 
         self.data_container = data_container
-        self.data_container.default_process_df
-        self.data_container.normalized_factor_value_df.loc[8303]
-
 
         self.char_list = ['Value', 'Dividend', 'Momentum', 'Investment', 'Risk', 'WinRatio', 'Market']
-        self.char_factor_mapping_dict = {'Value': ['Value_f_mean'],
-                                    'Dividend': ['Dividend_f_mean'],
-                                    'Momentum': ['Momentum_f_mean'],
-                                    'Investment': ['Investment_f_mean'],
-                                    'Risk': ['SD'],
-                                    'WinRatio': ['UpsideFrequency'],
-                                    'Market': ['TrackingError']}
-
+        self.char_factor_mapping_dict = {'Value': 'Value_f_mean',
+                                         'Dividend': 'Dividend_f_mean',
+                                         'Momentum': 'Momentum_f_mean',
+                                         'Investment': 'Investment_f_mean',
+                                         'Risk': 'SD',
+                                         'WinRatio': 'UpsideFrequency',
+                                         'Market': 'TrackingError'}
 
     def make_attribution_and_factor_weight_array(self, factor_weight_df: pd.DataFrame,
                                                  qcut_df: pd.DataFrame, quantile: int) -> np.array:
@@ -373,7 +375,7 @@ class OptionalProcessCalculation():
         result_array = np.swapaxes(result_array, 0, 2)
         return result_array
 
-    def make_normalized_ca(self, ca_list:list):
+    def make_normalized_ca(self, ca_list: list):
         ca_list = np.array(ca_list)
         if np.ndim(ca_list) == 1:
             result = ca_list / np.abs(ca_list).max()
@@ -390,63 +392,45 @@ class OptionalProcessCalculation():
         result_array = self.make_attribution_and_factor_weight_array(factor_weight_df, qcut_df, quantile)
         return result_array
 
-    def default_process_n_top(self, default_n_top: int):
-        default_n_top = 100
-        quantile = 10
-        default_process_df = self.data_container.default_process_df
-        default_process_tsv = self.data_container.default_process_tsv
-        quantile_weight_array = self.asv_quantile_average_weight(default_process_df, pd.DataFrame(default_process_tsv), quantile)
+    def make_average_weight_df(self, weight_df: pd.DataFrame, score_vector: pd.DataFrame, quantile: int = 10):
+        quantile_weight_array = self.asv_quantile_average_weight(weight_df, score_vector, quantile)
         average_weight_df = pd.DataFrame(quantile_weight_array[0, :, :])
-        average_weight_df.index = self.fourth_original_df.columns[:14]
+        average_weight_df.index = self.data_container.factor_weight_df.columns
         average_weight_df.columns = [f'{x + 1}_q' for x in range(quantile)]
-        result['average_weight_df'] = average_weight_df
-        
-    def make_result_dict(self, ca_list:list, top_N:int = 80) -> dict:
+        return average_weight_df
+
+    def make_result_dict(self, ca_list: list, default_top_n: int = 100, optional_top_n: int = 100) -> dict:
         # 1 단계 average_weight_df 를 구하는 단계
         result = {}
         quantile = 10
+        default_top_n_score_vector = (self.data_container.default_process_tsv.sort_values()[::-1]).iloc[:default_top_n]
+        default_top_n_index = default_top_n_score_vector.index
+        default_top_n_weight_df = self.data_container.factor_weight_df.loc[default_top_n_index]
+        default_top_n_factor_df = self.data_container.normalized_factor_value_df.loc[default_top_n_index]
 
-        ## 1단계 특성, 팩터비중, 특성 퀀타일 어레이 생성
-        factor_df = self.data_container.default_process_df
-        self.data_container.default_process_tsv
-        self.data_container.tsv
-        quantile_weight_array = self.asv_quantile_average_weight(factor_df, pd.DataFrame(self.asv_4), quantile)
-        ## for 문 돌면서 모든 경우 처리
-        average_weight_df = pd.DataFrame(quantile_weight_array[0, :, :])
-        average_weight_df.index = self.fourth_original_df.columns[:14]
-        average_weight_df.columns = [f'{x + 1}_q' for x in range(quantile)]
-        asv_rank = self.asv_4.rank(ascending=False)
-        top_n_factor_characters_df = self.fourth_original_df.iloc[:, 14:].loc[asv_rank[asv_rank <= top_N].dropna().index]
+        default_top_n_average_weight_df = self.make_average_weight_df(weight_df=default_top_n_weight_df,
+                                                                      score_vector=pd.DataFrame(default_top_n_score_vector),
+                                                                      quantile=quantile)
 
-        ## 4단계 절대적으로 필터링 하는 단계
-        if type(self.final_df) == int:
-            final_df = top_n_factor_characters_df.sort_values(by='Sharpe', ascending=False)
-            result['final_factor_df'] = final_df
+        optional_top_n_score_vector = ((default_top_n_factor_df[self.char_factor_mapping_dict.values()] @ \
+                                      self.make_normalized_ca(ca_list)).sort_values()[::-1]).iloc[:optional_top_n]
+        optional_top_n_index = optional_top_n_score_vector.index
+        optional_top_n_weight_df = self.data_container.factor_weight_df.loc[optional_top_n_index]
+        optional_top_n_factor_df = self.data_container.normalized_factor_value_df.loc[optional_top_n_index]
+        ## TODO 최종값 필터링 하는 어떠한 로직이 들어와야함
+        
+        
+        result['average_weight_df'] = default_top_n_average_weight_df
+        result['final_factor_df'] = optional_top_n_factor_df
+        result['normalized_factor_df'] = self.data_container.normalized_factor_value_df
 
-        else:
-            ## 특성 락킹된 값있으면 사용
-            normalized_ca_locking = self.make_normalized_ca(ca_list)
-            normalized_factor_df_locking = self.make_normalized_factor_df(factor_characters_df=self.factor_characters_df.loc[self.final_df.index])
-            asv_locking = pd.DataFrame(normalized_factor_df_locking.values @ normalized_ca_locking)
-            asv_locking.index = normalized_factor_df_locking.index
-            quantile_weight_array_locking = self.asv_quantile_average_weight(self.factor_weight_df.loc[self.final_df.index], asv_locking, quantile)
-            ## for 문 돌면서 모든 경우 처리
-            average_weight_df_locking = pd.DataFrame(quantile_weight_array_locking[0, :, :])
-            average_weight_df_locking.index = self.factor_weight_df.columns
-            average_weight_df_locking.columns = [f'{x + 1}_q' for x in range(quantile)]
-            asv_rank_locking = asv_locking.rank(ascending=False)
-            final_df_locking = self.final_df.loc[asv_rank_locking[asv_rank_locking <= top_N].dropna().index]
-
-        result['average_weight_df'] = average_weight_df
-        result['asv_locking'] = asv_locking
-        result['final_factor_df'] = final_df_locking
         key = result.keys()
         with pd.ExcelWriter(f'out/{ca_list}.xlsx') as writer:
             for key_name in key:
                 result[key_name].to_excel(writer, sheet_name=key_name)
-        result['normalized_factor_df'] = self.normalized_factor_df
 
         return result
+
 
 if __name__ == '__main__':
     aa = OptionalProcessCalculation()

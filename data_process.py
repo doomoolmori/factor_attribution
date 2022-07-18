@@ -32,9 +32,9 @@ class DataContainer():
         self.normalized_factor_value_df['winratio-big jump'] = self.normalized_factor_value_df['MaxReturn'] - \
                                                                self.normalized_factor_value_df['UpsideFrequency']
 
-    #def normalized_df(self, df: pd.DataFrame) -> pd.DataFrame:
-    #    normalized_df = df.apply(lambda x: self.calculation_normalized(x), axis=0)
-    #    return normalized_df
+    def normalized_df(self, df: pd.DataFrame) -> pd.DataFrame:
+        normalized_df = df.apply(lambda x: self.calculation_normalized(x), axis=0)
+        return normalized_df
 
     def calculation_normalized(self, data_list: list) -> pd.Series:
         data_list = pd.Series(data_list)
@@ -44,8 +44,8 @@ class DataContainer():
             normal = (data_list - data_list.mean()) / data_list.std()
         return normal
 
-
 ####
+
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
