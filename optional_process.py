@@ -1,6 +1,3 @@
-import pandas as pd
-import numpy as np
-from itertools import *
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from matplotlib import cm
@@ -9,8 +6,6 @@ from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import pandas as pd
 import numpy as np
-import widget_plot as wp
-import data_process as dtp
 
 using_factor = ['Bankruptcy Score_f_mean', 'Contrarian_f_mean', 'Dividend_f_mean', 'Earning Momentum_f_mean',
                 'Earnings Quality_f_mean', 'Financial Quality_f_mean', 'Growth_f_mean',

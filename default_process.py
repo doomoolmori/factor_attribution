@@ -1,17 +1,7 @@
-import pandas as pd
-import numpy as np
-from itertools import *
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-from matplotlib import cm
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
 import pandas as pd
 import numpy as np
-import widget_plot as wp
 import optional_process as op
-
 
 # widget 파트
 class DefaultProcessWidget(QMainWindow):

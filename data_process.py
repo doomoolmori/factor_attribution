@@ -1,17 +1,7 @@
-import pandas as pd
-import numpy as np
-from itertools import *
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.figure import Figure
-from matplotlib import cm
-from PyQt5.QtWidgets import QApplication, QMainWindow, QWidget, QVBoxLayout
 from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
 import pandas as pd
 import numpy as np
-import widget_plot as wp
 import default_process as dp
-import optional_process as op
 
 class DataContainer():
     def __init__(self):
@@ -44,17 +34,13 @@ class DataContainer():
             normal = (data_list - data_list.mean()) / data_list.std()
         return normal
 
-####
+
 
 if __name__ == '__main__':
     import sys
     app = QApplication(sys.argv)
-
     data_container = DataContainer()
-    #default_process_calculation = DefaultProcessCalculation(data_container)
-    #window = widget_plot.MyWindow(calculation)
-    window1 = dp.DefaultProcessWidget(data_container)
-    #window1.combo_grid_box_event()
-    window1.show()
+    window = dp.DefaultProcessWidget(data_container)
+    window.show()
     app.exec_()
 
