@@ -37,60 +37,47 @@ box_plot_factor = ['Bankruptcy Score_f_mean', 'Contrarian_f_mean', 'Dividend_f_m
                    'Value_f_mean']
 
 
+
 class OptionalProcessWidget(QMainWindow):
     def __init__(self, data_container):
-        self.opc = OptionalProcessCalculation(data_container)
-
         super().__init__()
+
+        self.opc = OptionalProcessCalculation(data_container)
         print(self.opc.data_container.default_process_df)
         self.setGeometry(100, 200, 500, 400)
         self.setWindowTitle("PyQt")
-        self.setWindowIcon(QIcon("icon.png"))
-        self.price_box = QComboBox(self)
-        self.price_box.setGeometry(10, 60, 200, 30)
-        self.dividend_box = QComboBox(self)
-        self.dividend_box.setGeometry(10, 100, 200, 30)
-        self.momentum_box = QComboBox(self)
-        self.momentum_box.setGeometry(10, 140, 200, 30)
-        self.investment_box = QComboBox(self)
-        self.investment_box.setGeometry(10, 180, 200, 30)
-        self.risk_box = QComboBox(self)
-        self.risk_box.setGeometry(10, 220, 200, 30)
-        self.winratio_box = QComboBox(self)
-        self.winratio_box.setGeometry(10, 260, 200, 30)
-        self.market_box = QComboBox(self)
-        self.market_box.setGeometry(10, 300, 200, 30)
-        for i in range(-2, 3):
-            self.price_box.addItem(f'value_attribution : {i}')
-            self.dividend_box.addItem(f'dividend_attribution : {i}')
-            self.momentum_box.addItem(f'momentum_attribution : {i}')
-            self.investment_box.addItem(f'investment_attribution : {i}')
-            self.risk_box.addItem(f'risk_attribution : {i}')
-            self.winratio_box.addItem(f'winratio_attribution : {i}')
-            self.market_box.addItem(f'market_attribution : {i}')
-        self.price_box.setCurrentText(f'value_attribution : 0')
-        self.dividend_box.setCurrentText(f'dividend_attribution : 0')
-        self.momentum_box.setCurrentText(f'momentum_attribution : 0')
-        self.investment_box.setCurrentText(f'investment_attribution : 0')
-        self.risk_box.setCurrentText(f'risk_attribution : 0')
-        self.winratio_box.setCurrentText(f'winratio_attribution : 0')
-        self.market_box.setCurrentText(f'market_attribution : 0')
 
+        self.make_optional_combo_box_dict()
+        self.make_default_top_n_btn()
+        self.make_optional_top_n_btn()
+
+        self.setting_btn = QPushButton("setting", self)
+        self.setting_btn.move(300, 200)
+        self.setting_btn.clicked.connect(self.setting_dialog_open)
+
+    def make_optional_combo_box_dict(self):
+        self.optional_combo_box_dict = {}
+        for i, optional in enumerate(self.opc.char_list):
+            self.optional_combo_box_dict[f'{optional}_box'] = QComboBox(self)
+            self.optional_combo_box_dict[f'{optional}_box'].setGeometry(10, 60 * (i + 1), 200, 30)
+            for i in range(-2, 3):
+                self.optional_combo_box_dict[f'{optional}_box'].addItem(f'{optional}_attribution : {i}')
+            self.optional_combo_box_dict[f'{optional}_box'].setCurrentText(f'{optional}_attribution : 0')
+
+    def make_default_top_n_btn(self):
         self.default_top_N = QComboBox(self)
         self.default_top_N.setGeometry(300, 100, 200, 30)
         for i in range(1, 11):
             self.default_top_N.addItem(f'default_top_N : {i * 50}')
         self.default_top_N.setCurrentText(f'default_top_N : 100')
 
+    def make_optional_top_n_btn(self):
         self.optional_top_N = QComboBox(self)
         self.optional_top_N.setGeometry(300, 150, 200, 30)
         for i in range(1, 11):
             self.optional_top_N.addItem(f'optional_top_N : {i * 10}')
         self.optional_top_N.setCurrentText(f'optional_top_N : 100')
 
-        self.setting_btn = QPushButton("setting", self)
-        self.setting_btn.move(300, 200)
-        self.setting_btn.clicked.connect(self.setting_dialog_open)
 
     def close_widget(self):
         try:
@@ -112,13 +99,11 @@ class OptionalProcessWidget(QMainWindow):
 
     def setting_dialog_open(self):
         self.close_widget()
-        ca_list = np.array([int(self.price_box.currentText().split(' : ')[-1]), \
-                            int(self.dividend_box.currentText().split(' : ')[-1]), \
-                            int(self.momentum_box.currentText().split(' : ')[-1]), \
-                            int(self.investment_box.currentText().split(' : ')[-1]), \
-                            int(self.risk_box.currentText().split(' : ')[-1]), \
-                            int(self.winratio_box.currentText().split(' : ')[-1]), \
-                            int(self.market_box.currentText().split(' : ')[-1])])
+
+        ca_list = []
+        for optional in self.opc.char_list:
+            ca_list.append(int(self.optional_combo_box_dict[f'{optional}_box'].currentText().split(' : ')[-1]))
+        ca_list = np.array(ca_list)
         if np.abs(ca_list).sum() == 0:
             ca_list += 1
         self.ca_list = ca_list
@@ -348,7 +333,6 @@ class OptionalProcessCalculation():
 
         self.data_container = data_container
 
-        self.char_list = ['Value', 'Dividend', 'Momentum', 'Investment', 'Risk', 'WinRatio', 'Market']
         self.char_factor_mapping_dict = {'Value': 'Value_f_mean',
                                          'Dividend': 'Dividend_f_mean',
                                          'Momentum': 'Momentum_f_mean',
@@ -356,6 +340,8 @@ class OptionalProcessCalculation():
                                          'Risk': 'SD',
                                          'WinRatio': 'UpsideFrequency',
                                          'Market': 'TrackingError'}
+        self.char_list = list(self.char_factor_mapping_dict.keys())
+
 
     def make_attribution_and_factor_weight_array(self, factor_weight_df: pd.DataFrame,
                                                  qcut_df: pd.DataFrame, quantile: int) -> np.array:

@@ -5,12 +5,12 @@ import optional_process as op
 
 # widget 파트
 class DefaultProcessWidget(QMainWindow):
+
     def __init__(self, data_container):
         super().__init__()
         self.data_container = data_container
         self.default_process_calculation = DefaultProcessCalculation(data_container)
         self.setGeometry(100, 200, 500, 600)
-
         self.default_process_calculation.default_data_setting()
 
         self.make_standard_grid_combo_list()
