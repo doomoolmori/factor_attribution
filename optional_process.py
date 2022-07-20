@@ -107,10 +107,10 @@ class OptionalProcessWidget(QMainWindow):
         if np.abs(ca_list).sum() == 0:
             ca_list += 1
         self.ca_list = ca_list
+        print(ca_list)
         default_top_N = int(self.default_top_N.currentText().split(' : ')[-1])
         optional_top_N = int(self.optional_top_N.currentText().split(' : ')[-1])
 
-        print(ca_list)
         calculation_result = self.opc.make_result_dict(ca_list=ca_list,
                                                        default_top_n=default_top_N,
                                                        optional_top_n=optional_top_N)
@@ -411,7 +411,6 @@ class OptionalProcessCalculation():
                 result[key_name].to_excel(writer, sheet_name=key_name)
 
         return result
-
 
 if __name__ == '__main__':
     aa = OptionalProcessCalculation()
