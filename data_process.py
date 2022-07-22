@@ -13,17 +13,19 @@ class DataContainer():
         # 로우 데이터 정규화
         self.normalized_factor_value_df = self.normalized_df(df=self.factor_value_df)
         # 기준 1
-        self.normalized_factor_value_df['risk averse-aggresive'] = self.normalized_factor_value_df['SD']
+        self.normalized_factor_value_df['risk averse-aggresive'] = -self.normalized_factor_value_df['SD']
         # 기준 2
-        self.normalized_factor_value_df['passive-active'] = self.normalized_factor_value_df['TrackingError']
+        self.normalized_factor_value_df['passive-active'] = -self.normalized_factor_value_df['TrackingError']
         # 기준 3
-        self.normalized_factor_value_df['winratio-big jump'] = self.normalized_factor_value_df['MaxReturn'] - \
-                                                               self.normalized_factor_value_df['UpsideFrequency']
+        self.normalized_factor_value_df['winratio-big jump'] = self.normalized_factor_value_df['UpsideFrequency'] - \
+                                                               self.normalized_factor_value_df['MaxReturn']
+
         # 기준 4
-        self.normalized_factor_value_df['value-growth'] = (self.normalized_factor_value_df['Growth_f_mean'] +
-                                                              self.normalized_factor_value_df['Momentum_f_mean']) - \
-                                                             (self.normalized_factor_value_df['Value_f_mean'] +
-                                                              self.normalized_factor_value_df['Contrarian_f_mean'])
+        self.normalized_factor_value_df['value-growth'] = (self.normalized_factor_value_df['Value_f_mean'] +
+                                                          self.normalized_factor_value_df['Contrarian_f_mean']) - \
+                                                          (self.normalized_factor_value_df['Growth_f_mean'] +
+                                                          self.normalized_factor_value_df['Momentum_f_mean'])
+
         # 기준 5
         self.normalized_factor_value_df['dividend-investment'] = self.normalized_factor_value_df['Dividend_f_mean'] - \
                                                                self.normalized_factor_value_df['Investment_f_mean']

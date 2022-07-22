@@ -208,34 +208,26 @@ class LeverCalculation():
         return intersect_and_valuesum_idx
 
 
-    # 리스크 위주로 쳐내고, 나머지는 value썸하는 방식
+    # 리스크로 처내고 가장 가까운 공간을 찾는 방안.
     # (https://www.notion.so/8d62df11c324497e99f5b4b0e3e52fd9#299f66991e1f42b18658328c1e3c9c68) 의 4번 방안
     def make_lever_intersection_and_near_idx(self, ca_list):
         score_dict = dict(zip(lever_list, ca_list))
-        # level 마다 해당하는 전략인덱스를 저장하기 위한 리스트
-        lever_universe_list = []
-        # 레버들을 돌면서 공간을 쳐낸다.
-        standard_score = (np.array([5, 4, 3, 2, 1]) - np.array([5, 4, 3, 2, 1]).mean())/np.array([5, 4, 3, 2, 1]).std()
-        epsilon = 0.0001
-        for lever in score_dict.keys():
-            score = score_dict[lever]
+        null_space_df = self.make_null_space_df()
+        abs_risk_space_df = null_space_df[null_space_df['risk averse-aggresive'] == score_dict['risk averse-aggresive']]
+        abs_risk_space_df = abs_risk_space_df[abs_risk_space_df['null'] == 0]
+
+        for i, lever in enumerate(score_dict.keys()):
             if lever == 'risk averse-aggresive':
-                # 리스크인 경우 해당 스코어 이하의 전략들을 사용한다.
-                abs_risk_idx = self.qcut_df[lever][(self.qcut_df[lever] <= score)].index
-            elif lever == 'passive-active':
-                shift_down = 0
-                relative_risk_idx = self.qcut_df[lever][(self.qcut_df[lever] == score)].index
-                risk_idx = list(set(abs_risk_idx) & set(relative_risk_idx))
-                while len(risk_idx) == 0:
-                    shift_down += 1
-                    relative_risk_idx = self.qcut_df[lever][(self.qcut_df[lever] == score - shift_down)].index
-                    risk_idx = list(set(abs_risk_idx) & set(relative_risk_idx))
-                    print(shift_down)
-                idx = risk_idx
+                diff = np.array(abs_risk_space_df[lever_list[i:]]) - ca_list[i:]
+                distance = np.sqrt((diff ** 2).sum(1))
             else:
-                # 이외의 영우 해당 스코어 -1 , +1 범위의 전략들을 사용한다.
-                idx = self.qcut_df[lever][(self.qcut_df[lever] >= score - 1) & (self.qcut_df[lever] <= score + 1)].index
-            lever_universe_list.append(list(idx))
+                diff = np.array(abs_risk_space_df[lever_list[i]]) - ca_list[i]
+                distance = np.sqrt((diff ** 2))
+            abs_risk_space_df = abs_risk_space_df[distance == distance.min()]
+
+        null_space_filtered_ca_list = abs_risk_space_df[lever_list].values[0]
+        near_intersect_idx = self.make_lever_intersection_idx(ca_list=null_space_filtered_ca_list)
+        return near_intersect_idx
 
     def make_all_score_space(self):
         all_score_space = list(product([1, 2, 3, 4, 5], repeat=len(lever_list)))
@@ -253,13 +245,14 @@ class LeverCalculation():
                 if len(temp_idx) == 0:
                     null_space.append(i)
             space_df = pd.DataFrame(all_score_space)
+            space_df.columns = lever_list
             space_df['null'] = 0
             space_df['null'].loc[null_space] = 1
             space_df.to_csv('null_space.csv')
         return space_df
 
 if __name__ == '__main__':
-    """
+
     import sys
     app = QApplication(sys.argv)
     data_container = data_process.DataContainer()
@@ -271,3 +264,10 @@ if __name__ == '__main__':
     data_container = data_process.DataContainer()
     lever_calculation = LeverCalculation(data_container)
     lever_calculation.make_null_space_df()
+    """
+
+
+
+
+
+
